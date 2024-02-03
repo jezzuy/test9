@@ -1,10 +1,10 @@
 version: "3.1"
 services:
 
-    sqldb4:
+    sqldb5:
         image: mysql:8.0
         ports: 
-            - "13759:3308"
+            - "14759:3308"
         command: ["--default-authentication-plugin=mysql_native_password", "--max-allowed-packet=512M", "--max-connections=1000"]
         restart: always
         environment:
@@ -13,7 +13,7 @@ services:
             MYSQL_PASSWORD: test
             MYSQL_ROOT_PASSWORD: test
         volumes:
-            - ./mysql_data5:/var/lib/mysql
+            - ./mysql_data6:/var/lib/mysql
         networks:
             my-main-net:
                 ipv4_address: 172.18.112.250
@@ -21,11 +21,11 @@ services:
         build: .
         restart: always
         ports: 
-            - "9751:80"
+            - "19591:80"
         volumes:
             - ./www:/var/www/html/
         links:
-            - sqldb4
+            - sqldb5
         networks:
             - my-main-net
 
@@ -33,17 +33,17 @@ services:
         image: phpmyadmin/phpmyadmin
         restart: always
         ports:
-            - 9202:80
+            - 9272:80
         links:
-            - sqldb4
+            - sqldb5:db
         environment:
-            PMA_HOST: sqldb4
-            PMA_PORT: 3308
-            PMA_ARBITRARY: 1
+            MYSQL_USER: user
+            MYSQL_PASSWORD: test
+            MYSQL_ROOT_PASSWORD: test
         networks:
             - my-main-net
 volumes:
-    mysql_data5:
+    mysql_data6:
     
 networks:
     my-main-net:
