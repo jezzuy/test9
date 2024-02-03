@@ -1,9 +1,5 @@
 FROM php:8.2-apache
 
-# Set environment variables
-ENV PHP_UID=1000
-ENV PHP_GID=1000
-
 # Combine apt-get update and apt-get install
 RUN apt-get update && \
     apt-get install -y \
@@ -21,24 +17,23 @@ RUN apt-get update && \
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
     docker-php-ext-install mysqli imap gd zip
 
-# Set environment variables, create group and user, and set permissions
-RUN addgroup -g ${PHP_UID} www \
-    && adduser -H -D -u ${PHP_GID} -G www www \
-    && chown -R www:www /var/www \
-    && find /var/www/ -type d -exec chmod 755 {} \; \
-    && find /var/www/ -type f -exec chmod 644 {} \;
+# Set permissions and ownership for the web server
+
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod 755 /var/www/html/uploads/ \
+    && chmod 755 /var/www/html/application/config/ \
+    && chmod 755 /var/www/html/application/config/config.php \
+    && chmod 755 /var/www/html/application/config/app-config-sample.php \
+    && chmod 755 /var/www/html/temp/
 
 # Set PHP configuration
-RUN echo "upload_max_filesize = 10M" > /usr/local/etc/php/conf.d/uploads.ini && \
-    echo "post_max_size = 10M" >> /usr/local/etc/php/conf.d/uploads.ini && \
+RUN echo "upload_max_filesize = 8M" > /usr/local/etc/php/conf.d/uploads.ini && \
+    echo "post_max_size = 8M" >> /usr/local/etc/php/conf.d/uploads.ini && \
     echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # Enable Apache modules
 RUN a2enmod rewrite
 
-# Set working directory and switch to the user
-WORKDIR /var/www/
-USER www
 
 # Restart Apache
 RUN service apache2 restart
